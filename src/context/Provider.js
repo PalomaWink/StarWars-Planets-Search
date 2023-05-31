@@ -4,6 +4,7 @@ import Context from './Context';
 
 function Provider({ children }) {
   const [planets, setPlanets] = useState([]);
+  const [input, setInput] = useState('');
 
   useEffect(() => {
     const fetchPlanets = async () => {
@@ -18,8 +19,15 @@ function Provider({ children }) {
     fetchPlanets();
   }, []);
 
+  const handleInput = ({ target }) => {
+    const { value } = target;
+    setInput(value);
+  };
+
   const context = {
     planets,
+    handleInput,
+    input,
   };
 
   return (
