@@ -21,10 +21,30 @@ function Forms() {
 
   const handleFilterNumber = ({ target }) => {
     const { value } = target;
-    const result = planets
-      .filter((planet) => planet.orbital_period.includes(value));
-    setinput(result);
+    setinput(value);
   };
+
+  const handleFilter = () => {
+    // o que eu quero filtrar:
+    // meu primeiro select define o campo da informação
+    // meu segundo select define se é maior, menor ou igual
+    // meu terceiro campo e um valor que eu digito e vai definir os outros filtros
+    // preciso fazer um novo useEvent para atualizar a pagina?
+    // Criar dois estados, o primeiro vai ser o original(esse eu nunca mudo depois do fetch) useEffect (toda a vida que eu filtro eu recomeco)
+    // criar o segundo estado como uma copia do original e fazer um filter nele
+    planets.filter((infos) => infos[select] === inputNumber);
+    switch (selectComparison) {
+    case 'maior_que':
+      return planets.filter((infos) => infos[select] > Number(inputNumber));
+    case 'menor_que':
+      return planets.filter((infos) => infos[select] < Number(inputNumber));
+    case 'igual_a':
+      return planets.filter((infos) => infos[select] === Number(inputNumber));
+    default:
+      break;
+    }
+  };
+  console.log(handleFilter());
 
   return (
     <div>
@@ -69,7 +89,7 @@ function Forms() {
       <button
         type="button"
         data-testid="button-filter"
-        // onClick={ () => handleFilter() }
+        onClick={ handleFilter }
       >
         Filtrar
       </button>
