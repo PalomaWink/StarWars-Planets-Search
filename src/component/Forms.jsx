@@ -1,50 +1,15 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import Context from '../context/Context';
 
 function Forms() {
-  const { planets, handleInput, input } = useContext(Context);
-  console.log(planets);
+  const { handleInput, input, handleChange, handleFilter } = useContext(Context);
 
-  const [select, setSelect] = useState('population');
-  const [selectComparison, setSelectComparison] = useState('maior_que');
-  const [inputNumber, setinput] = useState('0');
-
-  const handleSelectColumn = ({ target }) => {
-    const { value } = target;
-    setSelect(value);
-  };
-
-  const handleSelectComparison = ({ target }) => {
-    const { value } = target;
-    setSelectComparison(value);
-  };
-
-  const handleFilterNumber = ({ target }) => {
-    const { value } = target;
-    setinput(value);
-  };
-
-  const handleFilter = () => {
-    // o que eu quero filtrar:
-    // meu primeiro select define o campo da informação
-    // meu segundo select define se é maior, menor ou igual
-    // meu terceiro campo e um valor que eu digito e vai definir os outros filtros
-    // preciso fazer um novo useEvent para atualizar a pagina?
-    // Criar dois estados, o primeiro vai ser o original(esse eu nunca mudo depois do fetch) useEffect (toda a vida que eu filtro eu recomeco)
-    // criar o segundo estado como uma copia do original e fazer um filter nele
-    planets.filter((infos) => infos[select] === inputNumber);
-    switch (selectComparison) {
-    case 'maior_que':
-      return planets.filter((infos) => infos[select] > Number(inputNumber));
-    case 'menor_que':
-      return planets.filter((infos) => infos[select] < Number(inputNumber));
-    case 'igual_a':
-      return planets.filter((infos) => infos[select] === Number(inputNumber));
-    default:
-      break;
-    }
-  };
-  console.log(handleFilter());
+  // o que eu quero filtrar:
+  // meu primeiro select define o campo da informação
+  // meu segundo select define se é maior, menor ou igual
+  // meu terceiro campo e um valor que eu digito e vai definir os outros filtros
+  // Criar dois estados, o primeiro vai ser o original(esse eu nunca mudo depois do fetch) useEffect (toda a vida que eu filtro eu recomeco)
+  // criar o segundo estado como uma copia do original e fazer um filter nele
 
   return (
     <div>
@@ -60,8 +25,7 @@ function Forms() {
       <select
         data-testid="column-filter"
         name="column"
-        value={ select }
-        onChange={ handleSelectColumn }
+        onChange={ ({ target: { name, value } }) => handleChange(name, value) }
       >
         <option value="population">population</option>
         <option value="orbital_period">orbital_period</option>
@@ -72,8 +36,7 @@ function Forms() {
       <select
         data-testid="comparison-filter"
         name="comparison"
-        value={ selectComparison }
-        onChange={ handleSelectComparison }
+        onChange={ ({ target: { name, value } }) => handleChange(name, value) }
       >
         <option value="maior_que">maior que</option>
         <option value="menor_que">menor que</option>
@@ -82,9 +45,8 @@ function Forms() {
       <input
         type="number"
         name="value"
-        value={ inputNumber }
         data-testid="value-filter"
-        onChange={ handleFilterNumber }
+        onChange={ ({ target: { name, value } }) => handleChange(name, value) }
       />
       <button
         type="button"
