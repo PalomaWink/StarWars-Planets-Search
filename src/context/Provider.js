@@ -7,8 +7,8 @@ function Provider({ children }) {
   const [input, setInput] = useState('');
   const [select, setSelect] = useState({
     column: 'population',
-    comparison: 'maior_que',
-    value: 0,
+    comparison: 'maior que',
+    value: '0',
   });
   const [filterPlanets, setFilterPlanets] = useState([]); // segundo estado que sera alterado apos o fetch
 
@@ -38,24 +38,20 @@ function Provider({ children }) {
   };
 
   const handleFilter = () => {
-    // Preciso retornar alguma coisa daqui e alterar meu estado setFilterPlanets (foreach e switch).
-    const resultFilter = filterPlanets.filter((infos) => {
-      console.log(infos);
-      switch (select.comparison) {
-      case infos.comparison === 'maior_que':
-        return conditions
-          .filter((planet) => Number(planet[select]) > Number(select.value));
-      case infos.comparison === 'menor_que':
-        return conditions
-          .filter((planet) => Number(planet[select]) < Number(select.value));
-      case infos.comparison === 'igual_a':
-        return conditions
-          .filter((planet) => Number(planet[select]) === Number(select.value));
-      default:
-        return true;
+    const { column, comparison, value } = select;
+    const filter = filterPlanets.filter((planet) => {
+      if (comparison === 'maior que') {
+        return Number(planet[column]) > Number(value);
       }
+      if (comparison === 'menor que') {
+        return Number(planet[column]) < Number(value);
+      }
+      if (comparison === 'igual a') {
+        return Number(planet[column]) === Number(value);
+      }
+      return filterPlanets;
     });
-    setFilterPlanets(resultFilter);
+    setFilterPlanets(filter);
   };
 
   const context = {
@@ -65,6 +61,7 @@ function Provider({ children }) {
     handleChange,
     handleFilter,
     filterPlanets,
+    select,
   };
 
   return (
