@@ -93,4 +93,38 @@ describe('Teste se aparece todas as informações na tela', () => {
 
     expect(aldebaran).not.toBeInTheDocument();
   });
+  it('Verifica se o filtro de menor que funciona corretamente', async () => {
+    render(<App />);
+    const select = await screen.findAllByTestId('column-filter');
+    const selectComparison = await screen.findAllByTestId('comparison-filter');
+    const input = await screen.findByTestId('value-filter');
+    const button = await screen.findByTestId('button-filter')
+
+    userEvent.selectOptions(select[0], 'population');
+    userEvent.selectOptions(selectComparison[0], 'menor que');
+    userEvent.type(input, '200000');
+    userEvent.click(button);
+
+    await screen.findByText('Yavin IV');
+
+    expect(screen.queryByText('Alderaan')).not.toBeInTheDocument();
+  });
+  it('Verifica se o filtro de igual a que funciona corretamente', async () => {
+    render(<App />);
+    const select = await screen.findAllByTestId('column-filter');
+    const selectComparison = await screen.findAllByTestId('comparison-filter');
+    const input = await screen.findByTestId('value-filter');
+    const button = await screen.findByTestId('button-filter')
+
+    userEvent.selectOptions(select[0], 'rotation_period');
+    userEvent.selectOptions(selectComparison[0], 'igual a');
+    userEvent.type(input, '23');
+    userEvent.click(button);
+
+    await screen.findByText('Tatooine');
+    await screen.findByText('Hoth');
+    await screen.findByText('Dagobah');
+
+    expect(screen.queryByText('Alderaan')).not.toBeInTheDocument();
+  });
 });
