@@ -76,6 +76,11 @@ function Forms() {
       >
         Filtrar
       </button>
+      <button
+        data-testid="button-remove-filters"
+      >
+        Remover todos os filtros
+      </button>
       <div>
         {filter.map((f, index) => (
           <div key={ index }>
@@ -85,6 +90,7 @@ function Forms() {
               {f.value}
             </span>
             <button
+              data-testid="filter"
               onClick={ () => {
                 const cloneArray = [...filter];
                 console.log(cloneArray);
