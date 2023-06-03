@@ -62,6 +62,8 @@ function Provider({ children }) {
     handleFilter,
     filterPlanets,
     select,
+    setFilterPlanets,
+    setSelect,
   };
 
   return (

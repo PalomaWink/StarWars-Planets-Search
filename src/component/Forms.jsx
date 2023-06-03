@@ -1,8 +1,37 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Context from '../context/Context';
 
 function Forms() {
-  const { select, handleInput, input, handleChange, handleFilter } = useContext(Context);
+  const { select,
+    handleInput,
+    input,
+    handleChange,
+    handleFilter,
+    setFilterPlanets,
+    setSelect,
+  } = useContext(Context);
+
+  const options = ['population', 'orbital_period', 'diameter',
+    'rotation_period', 'surface_water'];
+
+  const [filter, setFilter] = useState([]); // estado que armazena os filtros realizados
+  const [optionsInput, setOptions] = useState(options); // estado que armazena as opções de filtro
+
+  const handleFIlterClick = () => {
+    const { column, comparison, value } = select;
+    const newFilter = [...filter, { column, comparison, value }];
+    setFilter(newFilter);
+    handleFilter();
+    console.log(optionsInput);
+    const optionCurrents = optionsInput
+      .filter((v) => v !== select.column);
+    console.log(select.column);
+    setOptions(optionCurrents);
+    setSelect({
+      ...optionsInput,
+      column: optionCurrents[0],
+    });
+  };
 
   return (
     <div>
@@ -20,11 +49,9 @@ function Forms() {
         name="column"
         onChange={ ({ target: { name, value } }) => handleChange(name, value) }
       >
-        <option value="population">population</option>
-        <option value="orbital_period">orbital_period</option>
-        <option value="diameter">diameter</option>
-        <option value="rotation_period">rotation_period</option>
-        <option value="surface_water">surface_water</option>
+        { optionsInput.map((option) => (
+          <option key={ option } value={ option }>{ option }</option>
+        ))}
       </select>
       <select
         data-testid="comparison-filter"
@@ -45,10 +72,31 @@ function Forms() {
       <button
         type="button"
         data-testid="button-filter"
-        onClick={ handleFilter }
+        onClick={ handleFIlterClick }
       >
         Filtrar
       </button>
+      <div>
+        {filter.map((f, index) => (
+          <div key={ index }>
+            <span>
+              {f.column}
+              {f.comparison}
+              {f.value}
+            </span>
+            <button
+              onClick={ () => {
+                const cloneArray = [...filter];
+                console.log(cloneArray);
+                cloneArray.splice(index, 1);
+                setFilterPlanets(cloneArray);
+              } }
+            >
+              𝙭
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
