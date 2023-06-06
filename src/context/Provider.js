@@ -5,7 +5,7 @@ import Context from './Context';
 function Provider({ children }) {
   const [planets, setPlanets] = useState([]); // Pirmeiro estado que nao sera alterado apos o fetch
   const [input, setInput] = useState('');
-  const [select, setSelect] = useState({
+  const [select, setSelect] = useState({ // estado para os selects e o input
     column: 'population',
     comparison: 'maior que',
     value: '0',
@@ -30,13 +30,13 @@ function Provider({ children }) {
     const { value } = target;
     setInput(value);
   };
-  // Criar dois estados, o primeiro vai ser o original(esse eu nunca mudo depois do fetch) useEffect (toda a vida que eu filtro eu recomeco)
-  // criar o segundo estado como uma copia do original e fazer um filter nele
 
+  // HandleChange para os selects e para o input
   const handleChange = (name, value) => {
     setSelect({ ...select, [name]: value });
   };
 
+  // HandleFilter para filtrar o comparisson
   const handleFilter = () => {
     const { column, comparison, value } = select;
     const filter = filterPlanets.filter((planet) => {

@@ -9,28 +9,58 @@ function Forms() {
     handleFilter,
     setFilterPlanets,
     setSelect,
+    planets,
   } = useContext(Context);
 
   const options = ['population', 'orbital_period', 'diameter',
     'rotation_period', 'surface_water'];
 
-  const [filter, setFilter] = useState([]); // estado que armazena os filtros realizados
+  const [filtered, setFilter] = useState([]); // estado que armazena os filtros realizados
   const [optionsInput, setOptions] = useState(options); // estado que armazena as opções de filtro
 
   const handleFIlterClick = () => {
     const { column, comparison, value } = select;
-    const newFilter = [...filter, { column, comparison, value }];
+    const newFilter = [...filtered, { column, comparison, value }];
     setFilter(newFilter);
     handleFilter();
-    console.log(optionsInput);
     const optionCurrents = optionsInput
       .filter((v) => v !== select.column);
-    console.log(select.column);
     setOptions(optionCurrents);
     setSelect({
       ...optionsInput,
       column: optionCurrents[0],
     });
+  };
+
+  const removeAllFilters = () => {
+    setFilterPlanets(planets);
+    setFilter([]);
+  };
+
+  const deleteFilter = (column) => {
+    const filters = filtered.filter((f) => f.column !== column);
+    /* setFilterPlanets({
+      ...filtered,
+      column: filters,
+    }); */
+    if (filters.length === 0) {
+      setFilterPlanets([...planets]);
+      setFilter([]);
+    }
+    /*   const filter = filterPlanets.filter((planet) => {
+      if (comparison === 'maior que') {
+        return Number(planet[column]) > Number(value);
+      }
+      if (comparison === 'menor que') {
+        return Number(planet[column]) < Number(value);
+      }
+      if (comparison === 'igual a') {
+        return Number(planet[column]) === Number(value);
+      }
+      return filterPlanets;
+    });
+    setFilterPlanets(filter); */
+    setFilter(filters);
   };
 
   return (
@@ -78,27 +108,24 @@ function Forms() {
       </button>
       <button
         data-testid="button-remove-filters"
+        onClick={ removeAllFilters }
       >
         Remover todos os filtros
       </button>
       <div>
-        {filter.map((f, index) => (
-          <div key={ index }>
+        {filtered.map((f, index) => (
+          <div key={ index } data-testid="filter">
             <span>
               {f.column}
               {f.comparison}
               {f.value}
             </span>
             <button
-              data-testid="filter"
               onClick={ () => {
-                const cloneArray = [...filter];
-                console.log(cloneArray);
-                cloneArray.splice(index, 1);
-                setFilterPlanets(cloneArray);
+                deleteFilter(f.column);
               } }
             >
-              𝙭
+              x
             </button>
           </div>
         ))}
