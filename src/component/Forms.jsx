@@ -37,30 +37,31 @@ function Forms() {
     setFilter([]);
   };
 
-  const deleteFilter = (column) => {
-    const filters = filtered.filter((f) => f.column !== column);
-    /* setFilterPlanets({
-      ...filtered,
-      column: filters,
-    }); */
+  const deleteFilter = (columns) => {
+    const filters = filtered.filter((f) => f.column !== columns.column);
+    if (!optionsInput.includes(columns.column)) {
+      setOptions([...optionsInput, columns.column]);
+    }
     if (filters.length === 0) {
       setFilterPlanets([...planets]);
       setFilter([]);
     }
-    /*   const filter = filterPlanets.filter((planet) => {
+    const filter = planets.filter((planet) => filters.every((f) => {
+      const { column, comparison, value } = f;
       if (comparison === 'maior que') {
         return Number(planet[column]) > Number(value);
       }
       if (comparison === 'menor que') {
         return Number(planet[column]) < Number(value);
       }
-      if (comparison === 'igual a') {
-        return Number(planet[column]) === Number(value);
-      }
-      return filterPlanets;
-    });
-    setFilterPlanets(filter); */
+      return Number(planet[column]) === Number(value);
+    }));
+    setFilterPlanets(filter);
     setFilter(filters);
+    /*  setFilter({
+      ...filtered,
+      column: filters,
+    }); */
   };
 
   return (
@@ -113,7 +114,7 @@ function Forms() {
         Remover todos os filtros
       </button>
       <div>
-        {filtered.map((f, index) => (
+        {filtered.length > 0 && filtered.map((f, index) => (
           <div key={ index } data-testid="filter">
             <span>
               {f.column}
@@ -122,7 +123,7 @@ function Forms() {
             </span>
             <button
               onClick={ () => {
-                deleteFilter(f.column);
+                deleteFilter(f);
               } }
             >
               x

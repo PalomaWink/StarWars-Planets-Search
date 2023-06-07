@@ -54,7 +54,7 @@ function Provider({ children }) {
     setFilterPlanets(filter);
   };
 
-  const context = {
+  const value = {
     planets,
     handleInput,
     input,
@@ -67,7 +67,7 @@ function Provider({ children }) {
   };
 
   return (
-    <Context.Provider value={ context }>
+    <Context.Provider value={ value }>
       { children }
     </Context.Provider>
   );
