@@ -58,10 +58,6 @@ function Forms() {
     }));
     setFilterPlanets(filter);
     setFilter(filters);
-    /*  setFilter({
-      ...filtered,
-      column: filters,
-    }); */
   };
 
   return (

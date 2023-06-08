@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { queryByText, render, screen, waitFor } from '@testing-library/react';
 import App from '../App';
 import testData from '../../cypress/mocks/testData';
 import userEvent from '@testing-library/user-event';
@@ -126,5 +126,49 @@ describe('Teste se aparece todas as informações na tela', () => {
     await screen.findByText('Dagobah');
 
     expect(screen.queryByText('Alderaan')).not.toBeInTheDocument();
+  });
+  it('Verifica se o botao de remover todos os filtros esta funcionando', async () => {
+    render(<App />);
+    const buttonRemoveAllFilters = screen.getByTestId('button-remove-filters');
+    const buttonFilter = await screen.findByTestId('button-filter');
+
+    userEvent.click(buttonFilter);
+    userEvent.click(buttonFilter);
+    userEvent.click(buttonFilter);
+    
+    expect(screen.getAllByTestId('filter')).toHaveLength(3);
+
+    userEvent.click(buttonRemoveAllFilters);
+    expect(screen.queryAllByTestId('filter')).toHaveLength(0);
+  });
+  it('Verifica se o botao de remover filtro esta funcionando', async () => {
+    render(<App />);
+    const select = await screen.findAllByTestId('column-filter');
+    const button = await screen.findByTestId('button-filter')
+
+    userEvent.selectOptions(select[0], 'rotation_period');
+    userEvent.click(button);
+
+    const teste = screen.queryByText('rotation_period');
+    expect(teste).toBeNull();
+
+    const buttonX = await screen.findByRole('button', { name: /x/i });
+    userEvent.click(buttonX);
+    expect(buttonX).not.toBeInTheDocument();
+  });
+  it('Verifica se o botao de remover filtro esta atualizando a tabela', async () => {
+    render(<App />);
+    const select = await screen.findAllByTestId('column-filter');
+    const button = await screen.findByTestId('button-filter')
+
+    userEvent.selectOptions(select[0], 'rotation_period');
+    userEvent.click(button);
+
+    const buttonX = await screen.findByRole('button', { name: /x/i });
+    userEvent.click(buttonX);
+
+    await screen.findByText('Tatooine');
+    await screen.findByText('Alderaan');
+    await screen.findByText('Yavin IV');
   });
 });
