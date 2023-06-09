@@ -54,7 +54,10 @@ function Forms() {
       if (comparison === 'menor que') {
         return Number(planet[column]) < Number(value);
       }
-      return Number(planet[column]) === Number(value);
+      if (comparison === 'igual a') {
+        return Number(planet[column]) === Number(value);
+      }
+      return planet;
     }));
     setFilterPlanets(filter);
     setFilter(filters);
@@ -122,7 +125,7 @@ function Forms() {
                 deleteFilter(f);
               } }
             >
-              x
+              Deletar
             </button>
           </div>
         ))}

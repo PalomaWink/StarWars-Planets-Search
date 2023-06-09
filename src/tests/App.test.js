@@ -1,15 +1,18 @@
 import React from 'react';
-import { queryByText, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { act } from 'react-dom/test-utils';
 import App from '../App';
 import testData from '../../cypress/mocks/testData';
 import userEvent from '@testing-library/user-event';
 
 
 beforeEach(() => {
-  jest.spyOn(global, 'fetch');
-  global.fetch.mockResolvedValue({
-    json: jest.fn().mockResolvedValue(testData),
-  });
+  jest.spyOn(global, 'fetch')
+    .mockImplementation(() => Promise.resolve({
+      status: 200,
+      ok: true,
+      json: () => Promise.resolve(testData)
+    }));
 });
 
 afterEach(jest.restoreAllMocks);
@@ -23,18 +26,14 @@ describe('Teste se aparece todas as informações na tela', () => {
     });
     expect(heading).toBeInTheDocument();
   });
-  it('Verifica se a página contém um input com o placeholder "Digite o nome do planeta" sendo "search-input"', () => {
-    render(<App />);
-    const input = screen.getByRole('textbox')
-    expect(input).toBeInTheDocument();
-  });
-  it('Verifica se a página contém um button com o texto "Filtrar"', () => {
-    render(<App />);
-    const button = screen.getByRole('button', {
-      name: /filtrar/i,
+
+  it('Realize uma requisição para a API', async () => {
+    await act(async () => {
+      render(<App />);
     });
-    expect(button).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalled();
   });
+
   it('Verifica se a pagina contem um select com todas as opcoes de filtro', () => {
     render(<App />);
     const select = screen.getByTestId('column-filter')
@@ -43,15 +42,21 @@ describe('Teste se aparece todas as informações na tela', () => {
     const selectComparison = screen.getByTestId('comparison-filter')
     expect(selectComparison).toHaveLength(3);
   });
-  it('Verifica se a tabela é renderizada com os dados corretos', async () => {
-    render(<App />);
-    const table = await screen.findByRole('table');
-    expect(table).toBeInTheDocument();
 
-    screen.findByText('Tatooine');
-    screen.findByText('Alderaan');
-    screen.findByText('Yavin IV');
+  it('Filtre os planetas que possuem a letra "o" no nome', async () => {
+    await act(async () => {
+      render(<App />);
+    });
+
+    const input = await screen.findByTestId('name-filter');
+    userEvent.type(input, 'o');
+    expect(await screen.findAllByRole('row')).toHaveLength(8);
+    const planetNames = ['Coruscant', 'Dagobah', 'Endor', 'Hoth', 'Kamino', 'Naboo', 'Tatooine'];
+    for (let planetName of planetNames) {
+      expect(await screen.findByText(planetName)).toBeInTheDocument();
+    }
   });
+
   it('Verifica se os filtros estão funcionando corretamente', async () => {
     render(<App />);
     const select = await screen.findAllByTestId('column-filter');
@@ -63,36 +68,32 @@ describe('Teste se aparece todas as informações na tela', () => {
     userEvent.selectOptions(selectComparison[0], 'maior que');
     userEvent.type(input, '1000000');
     userEvent.click(button);
+    screen.debug();
 
-    await screen.findByText('Alderaan');
-    await screen.findByText('Bespin');
-    await screen.findByText('Endor');
-    await screen.findByText('Naboo');
-    await screen.findByText('Coruscant');
-    await screen.findByText('Kamino');
+    expect(await screen.findAllByRole('row')).toHaveLength(7);
 
     await waitFor(() => {
       userEvent.selectOptions(select[0], 'orbital_period');
       userEvent.selectOptions(selectComparison[0], 'menor que');
       userEvent.clear(input);
       userEvent.type(input, '400');
+      userEvent.click(button);
     });
 
-    screen.findByText('Alderaan');
-    screen.findByText('Naboo');
-    screen.findByText('Coruscant');
-  });
-  it('Verifica se ao preencher o campo de input o filtro e aplicado', async () => {
-    render(<App />);
-    const input = await screen.findByTestId('name-filter');
-    const aldebaran = await screen.findByText('Alderaan');
+    expect(await screen.findAllByRole('row')).toHaveLength(4);
 
-    await waitFor(() => {
-      userEvent.type(input, 'oo');
-    });  
-
-    expect(aldebaran).not.toBeInTheDocument();
   });
+
+  it('Verifica se o filtro é aplicado apenas usando o botao de filtrar', async () => {
+    await act(async () => {
+      render(<App />);
+    });
+
+    userEvent.click(await screen.findByTestId('button-filter'));
+
+    expect(await screen.findAllByRole('row')).toHaveLength(9);
+  });
+
   it('Verifica se o filtro de menor que funciona corretamente', async () => {
     render(<App />);
     const select = await screen.findAllByTestId('column-filter');
@@ -100,15 +101,14 @@ describe('Teste se aparece todas as informações na tela', () => {
     const input = await screen.findByTestId('value-filter');
     const button = await screen.findByTestId('button-filter')
 
-    userEvent.selectOptions(select[0], 'population');
+    userEvent.selectOptions(select[0], 'surface_water');
     userEvent.selectOptions(selectComparison[0], 'menor que');
-    userEvent.type(input, '200000');
+    userEvent.type(input, '40');
     userEvent.click(button);
 
-    await screen.findByText('Yavin IV');
-
-    expect(screen.queryByText('Alderaan')).not.toBeInTheDocument();
+    expect(await screen.findAllByRole('row')).toHaveLength(7);
   });
+
   it('Verifica se o filtro de igual a que funciona corretamente', async () => {
     render(<App />);
     const select = await screen.findAllByTestId('column-filter');
@@ -121,12 +121,9 @@ describe('Teste se aparece todas as informações na tela', () => {
     userEvent.type(input, '23');
     userEvent.click(button);
 
-    await screen.findByText('Tatooine');
-    await screen.findByText('Hoth');
-    await screen.findByText('Dagobah');
-
-    expect(screen.queryByText('Alderaan')).not.toBeInTheDocument();
+    expect(await screen.findAllByRole('row')).toHaveLength(4);
   });
+
   it('Verifica se o botao de remover todos os filtros esta funcionando', async () => {
     render(<App />);
     const buttonRemoveAllFilters = screen.getByTestId('button-remove-filters');
@@ -141,6 +138,7 @@ describe('Teste se aparece todas as informações na tela', () => {
     userEvent.click(buttonRemoveAllFilters);
     expect(screen.queryAllByTestId('filter')).toHaveLength(0);
   });
+
   it('Verifica se o botao de remover filtro esta funcionando', async () => {
     render(<App />);
     const select = await screen.findAllByTestId('column-filter');
@@ -152,23 +150,54 @@ describe('Teste se aparece todas as informações na tela', () => {
     const teste = screen.queryByText('rotation_period');
     expect(teste).toBeNull();
 
-    const buttonX = await screen.findByRole('button', { name: /x/i });
+    const buttonX = await screen.findByRole('button', { name: /deletar/i });
     userEvent.click(buttonX);
     expect(buttonX).not.toBeInTheDocument();
   });
-  it('Verifica se o botao de remover filtro esta atualizando a tabela', async () => {
-    render(<App />);
+  it('Testando as linhas 50 a 60', async () => {
+    const removeFilter = async () => {
+      const filters = await screen.findAllByTestId('filter');
+      userEvent.click(filters[0].querySelector('button'));
+    };
+    await act(async () => {
+      render(<App />);
+    });
+    expect(await screen.findAllByRole('row')).toHaveLength(11);
+
     const select = await screen.findAllByTestId('column-filter');
+    const selectComparison = await screen.findAllByTestId('comparison-filter');
+    const input = await screen.findByTestId('value-filter');
     const button = await screen.findByTestId('button-filter')
 
-    userEvent.selectOptions(select[0], 'rotation_period');
+    userEvent.selectOptions(select[0], 'diameter');
+    userEvent.selectOptions(selectComparison[0], 'maior que');
+    userEvent.type(input, '8900');
     userEvent.click(button);
 
-    const buttonX = await screen.findByRole('button', { name: /x/i });
-    userEvent.click(buttonX);
+    expect(await screen.findAllByRole('row')).toHaveLength(8);
 
-    await screen.findByText('Tatooine');
-    await screen.findByText('Alderaan');
-    await screen.findByText('Yavin IV');
+    await waitFor(() => {
+      userEvent.selectOptions(select[0], 'population');
+      userEvent.selectOptions(selectComparison[0], 'menor que');
+      userEvent.clear(input);
+      userEvent.type(input, '1000000');
+      userEvent.click(button);
+    });
+    expect(await screen.findAllByRole('row')).toHaveLength(3);
+
+    await waitFor(() => {
+      userEvent.selectOptions(select[0], 'orbital_period'); 
+      userEvent.selectOptions(selectComparison[0], 'igual a');
+      userEvent.clear(input);
+      userEvent.type(input, '304');
+      userEvent.click(button);
+    });
+    expect(await screen.findAllByRole('row')).toHaveLength(2);
+
+    await removeFilter();
+    await removeFilter();
+    await removeFilter();
+
+    expect(await screen.findAllByRole('row')).toHaveLength(11);
   });
 });
