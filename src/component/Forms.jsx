@@ -59,6 +59,7 @@ function Forms() {
       }
       return planet;
     }));
+    console.log(filter);
     setFilterPlanets(filter);
     setFilter(filters);
   };

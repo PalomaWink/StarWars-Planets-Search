@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import App from '../App';
 import testData from '../../cypress/mocks/testData';
@@ -17,7 +17,7 @@ beforeEach(() => {
 
 afterEach(jest.restoreAllMocks);
 
-describe('Teste se aparece todas as informações na tela', () => {
+describe('Testando aplicação Star Wars', () => {
   it('Verifica se a página contém um heading h1 com o texto "Projeto Star Wars - Trybe"', () => {
     render(<App />);
     const heading = screen.getByRole('heading', {
@@ -154,7 +154,7 @@ describe('Teste se aparece todas as informações na tela', () => {
     userEvent.click(buttonX);
     expect(buttonX).not.toBeInTheDocument();
   });
-  it('Testando as linhas 50 a 60', async () => {
+  it('Testando se mais de um filtro esta funcionando', async () => {
     const removeFilter = async () => {
       const filters = await screen.findAllByTestId('filter');
       userEvent.click(filters[0].querySelector('button'));
